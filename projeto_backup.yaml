@@ -1,0 +1,294 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Template para criar uma infraestrutura AWS com VPC, ALB, EC2 com Auto Scaling e S3 para uma aplicação Python.
+
+Parameters:
+  AppS3File:
+    Description: "Nome do arquivo Python da aplicação dentro do Bucket S3"
+    Type: String
+    Default: "app.py"
+  PythonScript:
+    Description: "Conteúdo Base64 do arquivo Python"
+    Type: String
+  InstanceType:
+    Description: "Tipo de instância EC2 para o Auto Scaling Group"
+    Type: String
+    Default: "t2.micro"
+  AMI:
+    Description: "AMI a ser usada para as instâncias EC2"
+    Type: String
+    Default: "ami-07caf09b362be10b8"
+
+Resources:
+  # S3 Bucket
+  AppS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: "bucket-projeto-lucam"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # Lambda Role
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: "S3UploadPolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "s3:PutObject"
+                  - "s3:PutObjectAcl"
+                  - "s3:ListBucket"
+                  - "s3:DeleteObject"
+                Resource:
+                  - !Sub "arn:aws:s3:::bucket-projeto-lucam"
+                  - !Sub "arn:aws:s3:::bucket-projeto-lucam/*"
+      Path: "/"
+
+  # Lambda Function to Upload Python Script
+  PythonScriptUploaderFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: |
+          import boto3
+          import cfnresponse
+          import base64
+
+          def handler(event, context):
+              s3 = boto3.client('s3')
+              bucket = event['ResourceProperties']['Bucket']
+              key = event['ResourceProperties']['Key']
+              content = base64.b64decode(event['ResourceProperties']['Content']).decode('utf-8')
+              s3.put_object(Bucket=bucket, Key=key, Body=content)
+              cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
+
+      Handler: "index.handler"
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: "python3.9"
+      Timeout: 30
+
+  # Lambda Function to Empty S3 Bucket
+  EmptyS3BucketFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: |
+          import boto3
+          import cfnresponse
+
+          def handler(event, context):
+              s3 = boto3.resource('s3')
+              bucket_name = event['ResourceProperties']['Bucket']
+              bucket = s3.Bucket(bucket_name)
+              try:
+                  bucket.objects.delete()
+                  cfnresponse.send(event, context, cfnresponse.SUCCESS, {})
+              except Exception as e:
+                  print(e)
+                  cfnresponse.send(event, context, cfnresponse.FAILED, {})
+
+      Handler: "index.handler"
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: "python3.9"
+      Timeout: 30
+
+  # Custom Resource to Upload Python Script
+  UploadPythonScriptCustomResource:
+    Type: Custom::UploadPythonScript
+    Properties:
+      ServiceToken: !GetAtt PythonScriptUploaderFunction.Arn
+      Bucket: "bucket-projeto-lucam"
+      Key: !Ref AppS3File
+      Content: !Ref PythonScript
+
+  # Custom Resource to Empty S3 Bucket
+  EmptyS3BucketCustomResource:
+    Type: Custom::EmptyS3Bucket
+    Properties:
+      ServiceToken: !GetAtt EmptyS3BucketFunction.Arn
+      Bucket: "bucket-projeto-lucam"
+
+  # VPC Configuration
+  MinhaVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: MinhaVPC
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: MeuInternetGateway
+
+  GatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref MinhaVPC
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MinhaVPC
+      CidrBlock: 10.0.1.0/24
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: us-east-1a
+      Tags:
+        - Key: Name
+          Value: PublicSubnet1
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MinhaVPC
+      CidrBlock: 10.0.2.0/24
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: us-east-1b
+      Tags:
+        - Key: Name
+          Value: PublicSubnet2
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref MinhaVPC
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnetRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet1
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnetRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet2
+      RouteTableId: !Ref PublicRouteTable
+
+  WebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security group for web instances"
+      VpcId: !Ref MinhaVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security group for ALB"
+      VpcId: !Ref MinhaVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+  MyALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Subnets:
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+      SecurityGroups:
+        - !Ref ALBSecurityGroup
+      Type: "application"
+
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: "forward"
+          TargetGroupArn: !Ref MyTargetGroup
+      LoadBalancerArn: !Ref MyALB
+      Port: 80
+      Protocol: "HTTP"
+
+  MyTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !Ref MinhaVPC
+      Port: 80
+      Protocol: "HTTP"
+      HealthCheckPath: "/"
+      HealthCheckProtocol: "HTTP"
+      HealthCheckIntervalSeconds: 30
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      UnhealthyThresholdCount: 2
+
+  LaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: !Ref AMI
+      InstanceType: !Ref InstanceType
+      SecurityGroups:
+        - !Ref WebServerSecurityGroup
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          apt update -y
+          apt install -y python3-pip awscli
+          pip3 install flask gunicorn
+          
+          # Criar diretório para a aplicação
+          mkdir -p /home/ubuntu/app
+          
+          # Baixar o arquivo da aplicação
+          aws s3 cp s3://bucket-projeto-lucam/${AppS3File} /home/ubuntu/app/app.py
+          
+          # Iniciar a aplicação com Gunicorn
+          cd /home/ubuntu/app
+          gunicorn --workers 3 --bind 0.0.0.0:80 app:app
+
+  AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      LaunchConfigurationName: !Ref LaunchConfig
+      MinSize: "1"
+      MaxSize: "3"
+      DesiredCapacity: "2"
+      TargetGroupARNs:
+        - !Ref MyTargetGroup
+      VPCZoneIdentifier:
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+
+Outputs:
+  LoadBalancerDNSName:
+    Description: "DNS do Load Balancer"
+    Value: !GetAtt MyALB.DNSName
