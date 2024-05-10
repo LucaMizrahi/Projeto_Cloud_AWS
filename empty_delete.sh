@@ -23,7 +23,7 @@ delete_bucket() {
   echo "Tentando deletar o bucket: $BUCKET_NAME..."
   aws s3api delete-bucket --bucket $BUCKET_NAME --region $REGION
 
-  if [ $? -eq 0 ]; então
+  if [ $? -eq 0 ]; then
     echo "Bucket $BUCKET_NAME deletado com sucesso."
   else
     echo "Erro ao deletar o bucket $BUCKET_NAME. Verifique se o bucket já foi esvaziado e se há problemas de permissão."
@@ -36,7 +36,7 @@ delete_stack() {
   echo "Tentando deletar a stack CloudFormation: $STACK_NAME..."
   aws cloudformation delete-stack --stack-name $STACK_NAME
 
-  if [ $? -eq 0 ]; então
+  if [ $? -eq 0 ]; then
     echo "Stack $STACK_NAME deletada com sucesso."
   else
     echo "Erro ao deletar a stack $STACK_NAME. Verifique as mensagens de erro do CloudFormation para mais detalhes."

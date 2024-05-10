@@ -1,15 +1,12 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >
-  Template para criar uma infraestrutura AWS com VPC, ALB, EC2 com Auto Scaling e S3 para uma aplicação Python.
+  Template para criar uma infraestrutura AWS com VPC, ALB, EC2 com Auto Scaling, S3 e DynamoDB para uma aplicacao Python.
 
 Parameters:
   AppS3File:
     Description: "Nome do arquivo Python da aplicação dentro do Bucket S3"
     Type: String
     Default: "app.py"
-  PythonScript:
-    Description: "Conteúdo Base64 do arquivo Python"
-    Type: String
   InstanceType:
     Description: "Tipo de instância EC2 para o Auto Scaling Group"
     Type: String
@@ -18,8 +15,47 @@ Parameters:
     Description: "AMI a ser usada para as instâncias EC2"
     Type: String
     Default: "ami-07caf09b362be10b8"
+  BucketName:
+    Description: "Nome do bucket S3 que contém a aplicacao Python"
+    Type: String
+    Default: "bucket-projeto-lucam"
 
 Resources:
+  # Role IAM para acesso ao S3 e DynamoDB
+  S3DynamoDBAccessRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "ec2.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: "AccessS3BucketAndDynamoDB"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action: "s3:GetObject"
+                Resource: !Sub "arn:aws:s3:::${BucketName}/*"
+              - Effect: "Allow"
+                Action:
+                  - "dynamodb:Scan"
+                  - "dynamodb:PutItem"
+                  - "dynamodb:DeleteItem"
+                  - "dynamodb:GetItem"
+                  - "dynamodb:UpdateItem"
+                Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Users_luca"
+
+  # Instance Profile
+  S3DynamoDBInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref S3DynamoDBAccessRole
+
   # VPC Configuration
   MinhaVPC:
     Type: AWS::EC2::VPC
@@ -156,22 +192,27 @@ Resources:
       InstanceType: !Ref InstanceType
       SecurityGroups:
         - !Ref WebServerSecurityGroup
+      IamInstanceProfile: !Ref S3DynamoDBInstanceProfile
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash
-          apt update -y
-          apt install -y python3-pip awscli
-          pip3 install flask gunicorn
-          
+      
+          sudo yum install -y python3-pip python3
+          # Instalar o Flask
+          sudo pip3 install flask
+          # Instalar AWS CLI
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
+          # Instalar AWS SDK para Python (Boto3)
+          sudo pip3 install boto3
           # Criar diretório para a aplicação
           mkdir -p /home/ubuntu/app
-          
-          # Baixar o arquivo da aplicação
-          aws s3 cp s3://bucket-projeto-lucam/${AppS3File} /home/ubuntu/app/app.py
-          
-          # Iniciar a aplicação com Gunicorn
           cd /home/ubuntu/app
-          gunicorn --workers 3 --bind 0.0.0.0:80 app:app
+          # Baixar a aplicação do S3
+          aws s3 cp s3://${BucketName}/${AppS3File} /home/ubuntu/app/app.py
+          # Executar a aplicação
+          python3 /home/ubuntu/app/app.py
 
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
@@ -237,6 +278,43 @@ Resources:
       ComparisonOperator: "LessThanThreshold"
       AlarmActions:
         - !Ref ScaleDownPolicy
+
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "Users_luca"
+      AttributeDefinitions:
+        - AttributeName: "UserID"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "UserID"
+          KeyType: "HASH"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      Tags:
+        - Key: "Name"
+          Value: "Users_luca"
+
+  DynamoDBVpcEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref MinhaVPC
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.dynamodb"
+      VpcEndpointType: "Interface"
+      SubnetIds:
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+      PrivateDnsEnabled: false
+      SecurityGroupIds:
+        - !Ref WebServerSecurityGroup
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "dynamodb:*"
+            Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Users_luca"
 
 Outputs:
   LoadBalancerDNSName:

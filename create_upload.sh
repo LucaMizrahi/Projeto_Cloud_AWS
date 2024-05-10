@@ -4,7 +4,6 @@
 BUCKET_NAME="bucket-projeto-lucam"
 STACK_NAME="application-stack"
 APP_FILE="app.py"
-BASE64_APP_FILE="app.py.b64"
 REGION="us-east-1"
 TEMPLATE_FILE="application-deployment.yaml"
 
@@ -43,17 +42,15 @@ upload_app_file() {
 
 # Função para criar a stack CloudFormation
 create_stack() {
-  echo "Convertendo $APP_FILE para Base64..."
-  base64 $APP_FILE > $BASE64_APP_FILE
   echo "Tentando criar a stack CloudFormation $STACK_NAME..."
   aws cloudformation create-stack \
     --stack-name $STACK_NAME \
     --template-body file://$TEMPLATE_FILE \
     --parameters \
       ParameterKey=AppS3File,ParameterValue=$APP_FILE \
-      ParameterKey=PythonScript,ParameterValue="$(cat $BASE64_APP_FILE)" \
       ParameterKey=AMI,ParameterValue="ami-07caf09b362be10b8" \
-    --capabilities CAPABILITY_IAM
+      ParameterKey=BucketName,ParameterValue=$BUCKET_NAME \
+    --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM
 
   if [ $? -eq 0 ]; then
     echo "Stack $STACK_NAME criada com sucesso."
