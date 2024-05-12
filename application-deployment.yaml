@@ -67,7 +67,7 @@ Resources:
         - Key: Name
           Value: MinhaVPC
 
-  # 
+  # Internet Gateway Configuration
   InternetGateway:
     Type: AWS::EC2::InternetGateway
     Properties:
@@ -75,6 +75,7 @@ Resources:
         - Key: Name
           Value: MeuInternetGateway
 
+  # Attach Internet Gateway to VPC
   GatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
@@ -340,6 +341,7 @@ Resources:
   #     AlarmActions:
   #       - !Ref ScaleDownPolicy
 
+  # Tabela DynamoDB para armazenar os usuários
   DynamoDBTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -357,6 +359,7 @@ Resources:
         - Key: "Name"
           Value: "Users_luca"
 
+  # Endpoint VPC para o DynamoDB para acesso privado
   DynamoDBVpcEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
@@ -377,6 +380,7 @@ Resources:
             Action: "dynamodb:*"
             Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Users_luca"
 
+# Output do DNS do Load Balancer para acesso à aplicação
 Outputs:
   LoadBalancerDNSName:
     Description: "DNS do Load Balancer"

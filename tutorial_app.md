@@ -124,3 +124,20 @@ pip install locust
 3. Defina o número de usuários e a taxa de usuários por segundo.
 
     **Sugestão**: Utilize *100* usuários e *10* usuários por segundo.
+
+4. Inicie o teste de carga e observe o comportamento do Auto Scaling Group e do CloudWatch, para confirmar que o Auto Scaling está funcionando corretamente.
+
+#### Utilização do Locust pela linha de comando
+
+1. Execute o comando `locust` para iniciar o teste de carga.
+
+    ```bash
+    locust -f locustfile.py --host=http://<SEU_ALB_DNS> --headless -u 100 -r 10
+    ```
+    - `-u` ou `--users`: Número de usuários
+    - `-r` ou `--spawn-rate`: Taxa de usuários por segundo
+    
+    **AVISO**: Substitua `<LoadBalancerDNS>` pelo link gerado no comando de obtenção do link do DNS.
+
+2. Observe o comportamento do Auto Scaling Group e do CloudWatch, para confirmar que o Auto Scaling está funcionando corretamente.
+
