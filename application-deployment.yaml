@@ -81,6 +81,7 @@ Resources:
       VpcId: !Ref MinhaVPC
       InternetGatewayId: !Ref InternetGateway
 
+  # Public Subnet 1
   PublicSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -92,6 +93,7 @@ Resources:
         - Key: Name
           Value: PublicSubnet1
 
+  # Subnet pública 2
   PublicSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
@@ -103,11 +105,13 @@ Resources:
         - Key: Name
           Value: PublicSubnet2
 
+  # Criar tabela de rota pública
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref MinhaVPC
 
+  # Criar rota para a internet
   PublicRoute:
     Type: AWS::EC2::Route
     Properties:
@@ -115,18 +119,21 @@ Resources:
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref InternetGateway
 
+  # Associar a rota da subnet 1 com a tabela de rota pública
   PublicSubnetRouteTableAssociation1:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref PublicSubnet1
       RouteTableId: !Ref PublicRouteTable
 
+  # Associar a rota da subnet 2 com a tabela de rota pública
   PublicSubnetRouteTableAssociation2:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref PublicSubnet2
       RouteTableId: !Ref PublicRouteTable
 
+  # Security Group para as instâncias EC2 com especificação de regras de entrada para o tráfego HTTP na porta 80 e SSH na porta 22
   WebServerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -142,6 +149,7 @@ Resources:
           ToPort: 22
           CidrIp: 0.0.0.0/0
 
+  # Security Group para o ALB com especificação de regras de entrada para o tráfego HTTP na porta 80
   ALBSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -153,6 +161,7 @@ Resources:
           ToPort: 80
           CidrIp: 0.0.0.0/0
 
+  # Load Balancer para distribuir o tráfego entre as instâncias EC2
   MyALB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -163,6 +172,7 @@ Resources:
         - !Ref ALBSecurityGroup
       Type: "application"
 
+  # Listener para o ALB 
   Listener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -173,6 +183,7 @@ Resources:
       Port: 80
       Protocol: "HTTP"
 
+  # Elastic Load Balancer para distribuir o tráfego entre as instâncias EC2 saudáveis
   MyTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -186,6 +197,7 @@ Resources:
       HealthyThresholdCount: 3
       UnhealthyThresholdCount: 2
 
+  # Launch Configuration para as instâncias EC2 do Auto Scaling Group
   LaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
@@ -221,6 +233,7 @@ Resources:
           # Executar a aplicação
           python3 /home/ubuntu/app/app.py
 
+  # Auto Scaling Group para escalabilidade da aplicação
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
@@ -233,6 +246,11 @@ Resources:
       VPCZoneIdentifier:
         - !Ref PublicSubnet1
         - !Ref PublicSubnet2
+    # Tags para a identificação do Auto Scaling Group
+    Tags:
+      - Key: Name
+        Value: "ASG Luca"
+        PropagateAtLaunch: true
 
   ScaleUpPolicy:
     Type: AWS::AutoScaling::ScalingPolicy
@@ -262,12 +280,13 @@ Resources:
         - Name: "AutoScalingGroupName"
           Value: !Ref AutoScalingGroup
       Statistic: "Average"
-      Period: 300
+      Period: 30
       EvaluationPeriods: 2
-      Threshold: 70
+      Threshold: 1 
       ComparisonOperator: "GreaterThanThreshold"
       AlarmActions:
         - !Ref ScaleUpPolicy
+      
 
   CPUAlarmLow:
     Type: AWS::CloudWatch::Alarm
@@ -281,10 +300,45 @@ Resources:
       Statistic: "Average"
       Period: 300
       EvaluationPeriods: 2
-      Threshold: 30
+      Threshold: 0.5
       ComparisonOperator: "LessThanThreshold"
       AlarmActions:
         - !Ref ScaleDownPolicy
+
+  # Alarmes utilizando número de requisições ao invés de uso de CPU
+  # HighRequestCountAlarm:
+  #   Type: AWS::CloudWatch::Alarm
+  #   Properties:
+  #     AlarmDescription: "Alarm when request count is high"
+  #     Namespace: "AWS/ApplicationELB"
+  #     MetricName: "RequestCountPerTarget"
+  #     Dimensions:
+  #       - Name: "TargetGroup"
+  #         Value: !Ref TargetGroupARN
+  #     Statistic: "Sum"
+  #     Period: 30
+  #     EvaluationPeriods: 2
+  #     Threshold: 100
+  #     ComparisonOperator: "GreaterThanThreshold"
+  #     AlarmActions:
+  #       - !Ref ScaleUpPolicy
+
+  # LowRequestCountAlarm:
+  #   Type: AWS::CloudWatch::Alarm
+  #   Properties:
+  #     AlarmDescription: "Alarm when request count is low"
+  #     Namespace: "AWS/ApplicationELB"
+  #     MetricName: "RequestCountPerTarget"
+  #     Dimensions:
+  #       - Name: "TargetGroup"
+  #         Value: !Ref TargetGroupARN
+  #     Statistic: "Sum"
+  #     Period: 30
+  #     EvaluationPeriods: 3
+  #     Threshold: 10
+  #     ComparisonOperator: "LessThanThreshold"
+  #     AlarmActions:
+  #       - !Ref ScaleDownPolicy
 
   DynamoDBTable:
     Type: AWS::DynamoDB::Table

@@ -100,20 +100,27 @@ Para atualizar a stack, é necessário alterar o arquivo `template.yaml` e execu
 
 Os custos foram calculados utilizando 
 
-### Teste do Elastic Auto Scaling
+### Teste do Elastic Auto Scaling com o Locust
 
-Para testar o Elastic Auto Scaling, é necessário utilizar o comando `stress` para simular uma alta carga na aplicação.
+Para testar o Elastic Auto Scaling, é necessário primeiro baixar para o locust, que é uma ferramenta de teste de carga, utilizando requests HTTP.
 
-1. Instale o `stress` na instância EC2
+Instale o `locust` pelo pip:
+
+```bash
+pip install locust
+```
+
+#### Utilização do Locust pela interface WEB
+
+1. Execute o comando `locust` para iniciar o servidor web do locust.
 
     ```bash
-    sudo apt-get install -y stress
+    locust -f locustfile.py --host=http://<LoadBalancerDNS>
     ```
-2. Execute o comando `stress` para simular uma alta carga na aplicação
-
-    ```bash
-    stress --cpu 8 --timeout 300
-    ```
-    **AVISO**: O comando acima irá simular uma alta carga na aplicação por 5 minutos.
+    **AVISO**: Substitua `<LoadBalancerDNS>` pelo link gerado no comando de obtenção do link do DNS.
   
-3. Acesse o console da AWS e verifique o Auto Scaling Group e o Load Balancer para ver a quantidade de instâncias que foram criadas.
+2. Acesse a interface web do locust através do link `http://localhost:8089`.
+
+3. Defina o número de usuários e a taxa de usuários por segundo.
+
+    **Sugestão**: Utilize *100* usuários e *10* usuários por segundo.
