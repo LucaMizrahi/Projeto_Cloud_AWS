@@ -21,7 +21,7 @@ Parameters:
     Default: "bucket-projeto-lucam"
 
 Resources:
-  # Role IAM para acesso ao S3 e DynamoDB
+  # Role IAM para acesso ao S3 e DynamoDB 
   S3DynamoDBAccessRole:
     Type: AWS::IAM::Role
     Properties:
@@ -67,6 +67,7 @@ Resources:
         - Key: Name
           Value: MinhaVPC
 
+  # 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
     Properties:
@@ -198,19 +199,25 @@ Resources:
           #!/bin/bash
       
           sudo yum install -y python3-pip python3
+
           # Instalar o Flask
           sudo pip3 install flask
+
           # Instalar AWS CLI
           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
           unzip awscliv2.zip
           sudo ./aws/install
+
           # Instalar AWS SDK para Python (Boto3)
           sudo pip3 install boto3
+
           # Criar diretório para a aplicação
           mkdir -p /home/ubuntu/app
           cd /home/ubuntu/app
+
           # Baixar a aplicação do S3
           aws s3 cp s3://${BucketName}/${AppS3File} /home/ubuntu/app/app.py
+
           # Executar a aplicação
           python3 /home/ubuntu/app/app.py
 
