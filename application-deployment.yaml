@@ -378,6 +378,50 @@ Resources:
             Action: "dynamodb:*"
             Resource: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Users_luca"
 
+  # AWS Code Pipeline para aplicação (S3 Bucket) e infraestrutura (GitHub) - não está correto ainda
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      RoleArn: !GetAtt CodePipelineRole.Arn
+      ArtifactStore:
+        Type: "S3"
+        Location: !Ref BucketName
+      Stages:
+        - Name: "Source"
+          Actions:
+            - Name: "Source"
+              ActionTypeId:
+                Category: "Source"
+                Owner: "ThirdParty"
+                Version: "1"
+                Provider: "GitHub"
+              OutputArtifacts:
+                - Name: "SourceOutput"
+              Configuration:
+                Owner: "lucasmoura"
+                Repo: "projeto-lucam"
+                Branch: "main"
+                OAuthToken: "my-oauth-token"
+                PollForSourceChanges: "true"
+              RunOrder: 1
+        - Name: "Deploy"
+          Actions:
+            - Name: "Deploy"
+              ActionTypeId:
+                Category: "Deploy"
+                Owner: "AWS"
+                Version: "1"
+                Provider: "CloudFormation"
+              InputArtifacts:
+                - Name: "SourceOutput"
+              Configuration:
+                StackName: "application-deployment"
+                ActionMode: "CREATE_UPDATE"
+                Capabilities: "CAPABILITY_NAMED_IAM"
+                RoleArn: !GetAtt CodePipelineRole.Arn
+                TemplatePath: "SourceOutput::application-deployment.yaml"
+              RunOrder: 1
+
 # Output do DNS do Load Balancer para acesso à aplicação
 Outputs:
   LoadBalancerDNSName:

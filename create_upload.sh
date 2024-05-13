@@ -6,6 +6,7 @@ STACK_NAME="application-stack"
 APP_FILE="app.py"
 REGION="us-east-1"
 TEMPLATE_FILE="application-deployment.yaml"
+SECRET_NAME="github-secret"
 
 # Função para criar o bucket S3
 create_bucket() {
@@ -40,6 +41,22 @@ upload_app_file() {
   fi
 }
 
+# Função para criar o AWS Secret Manager
+create_secret() {
+  echo "Tentando criar o AWS Secret Manager..."
+  aws secretsmanager create-secret \
+    --name $SECRET_NAME \
+    --description "Secret para acesso ao banco de dados" \
+    --secret-string file://secrets.json
+
+  if [ $? -eq 0 ]; then
+    echo "Secret $SECRET_NAME criado com sucesso."
+  else
+    echo "Erro ao criar o secret $SECRET_NAME. Verifique as mensagens de erro do AWS Secret Manager para mais detalhes."
+    exit 1
+  fi
+}
+
 # Função para criar a stack CloudFormation
 create_stack() {
   echo "Tentando criar a stack CloudFormation $STACK_NAME..."
@@ -60,11 +77,12 @@ create_stack() {
   fi
 }
 
-# Fluxo principal
+# Novo Fluxo Principal
 create_bucket
 if [ $? -eq 0 ]; then
   upload_app_file
   if [ $? -eq 0 ]; then
+    create_secret
     create_stack
   else
     echo "Erro ao fazer upload do arquivo Python. A stack não será criada."
