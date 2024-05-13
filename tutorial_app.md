@@ -132,7 +132,7 @@ pip install locust
 1. Execute o comando `locust` para iniciar o teste de carga.
 
     ```bash
-    locust -f locustfile.py --host=http://<SEU_ALB_DNS> --headless -u 100 -r 10
+    locustfile.py --host=http://<SEU_ALB_DNS> --headless -u 100 -r 10
     ```
     - `-u` ou `--users`: Número de usuários
     - `-r` ou `--spawn-rate`: Taxa de usuários por segundo
