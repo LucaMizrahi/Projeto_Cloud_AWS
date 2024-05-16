@@ -27,7 +27,31 @@ Para estimar os custos associados à arquitetura proposta, utilizamos a AWS Cost
 
 ## Comandos para utilização da aplicação
 
-### Criação da Stack 
+### Configuração do Ambiente	
+
+Configuração do ambiente para execução dos comandos:
+
+1. Instale o unzip para descompactar o arquivo de instalação do AWS CLI.
+
+    ```bash
+    sudo apt install unzip
+    ```
+
+2. Instale o AWS CLI para executar comandos na AWS.
+
+    ```bash
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip awscliv2.zip
+    sudo ./aws/install
+    ```
+3. Configure o AWS CLI com suas credenciais.
+
+    ```bash
+    aws configure
+    ```
+    **AVISO**: Insira suas credenciais da AWS (Access Key ID e Secret Access Key) e defina a região padrão como `us-east-1`.
+    
+### Criação da Stack
 
 Comandos para criação da stack: 
 
@@ -61,7 +85,7 @@ Agora que a aplicação está rodando, será utilizado o link gerado no comando 
 
     **OU** 
 
-    Pelo navegador acesse o link `http://<LoadBalancerDNS>` para acessar a aplicação.
+    >Pelo navegador acesse o link `http://<LoadBalancerDNS>` para acessar a aplicação.
 
 2. Acesse a rota `/users` da aplicação utilizando *curl*
 
@@ -72,7 +96,7 @@ Agora que a aplicação está rodando, será utilizado o link gerado no comando 
 
     **OU**
 
-    Pelo navegador acesse o link `http://<LoadBalancerDNS>/users` para listar todos os usuários.
+    >Pelo navegador acesse o link `http://<LoadBalancerDNS>/users` para listar todos os usuários.
   
 3. Crie um usuário no banco de dados
 
