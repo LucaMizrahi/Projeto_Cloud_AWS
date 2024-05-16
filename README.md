@@ -23,7 +23,6 @@ O diagrama da arquitetura AWS mostra a relação entre os diferentes serviços u
 ### Calculo dos Custos do Projeto
 Para estimar os custos associados à arquitetura proposta, utilizamos a AWS Cost Calculator. Esta ferramenta permite modelar e comparar os custos de diferentes configurações de serviços AWS, ajudando a tomar decisões informadas sobre escalabilidade e custo-benefício.
 
-# inserir link do PDF com os custos
 [Estimativa de Custos AWS](https://github.com/LucaMizrahi/Projeto_Cloud_AWS/blob/main/custos_AWS/My%20Estimate%20-%20Calculadora%20de%20Pre%C3%A7os%20da%20AWS.pdf)
 
 ## Comandos para utilização da aplicação
@@ -152,10 +151,11 @@ pip install locust
 1. Execute o comando `locust` para iniciar o teste de carga.
 
     ```bash
-    locustfile.py --host=http://<SEU_ALB_DNS> --headless -u 100 -r 10
+    locustfile.py --host=http://<LoadBalancerDNS> --headless -u 100 -r 10 -t 15m
     ```
     - `-u` ou `--users`: Número de usuários
     - `-r` ou `--spawn-rate`: Taxa de usuários por segundo
+    - `-t` ou `--run-time`: Tempo de execução do teste 
     
     **AVISO**: Substitua `<LoadBalancerDNS>` pelo link gerado no comando de obtenção do link do DNS.
 
