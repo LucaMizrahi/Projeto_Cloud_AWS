@@ -247,6 +247,7 @@ Resources:
         - !Ref PublicSubnet1
         - !Ref PublicSubnet2
 
+  # Política de escalabilidade para o Auto Scaling Group (baseada no uso de CPU)
   ScaleUpPolicy:
     Type: AWS::AutoScaling::ScalingPolicy
     Properties:
@@ -256,6 +257,7 @@ Resources:
       AdjustmentType: "ChangeInCapacity"
       Cooldown: 120
 
+  # Política de escalabilidade para o Auto Scaling Group (baseada no uso de CPU)
   ScaleDownPolicy:
     Type: AWS::AutoScaling::ScalingPolicy
     Properties:
@@ -265,6 +267,7 @@ Resources:
       AdjustmentType: "ChangeInCapacity"
       Cooldown: 120
 
+  # Alarme para monitorar o uso de CPU e acionar a política de escalabilidade (Acima de limite)
   CPUAlarmHigh:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -282,6 +285,7 @@ Resources:
       AlarmActions:
         - !Ref ScaleUpPolicy
       
+  # Alarme para monitorar o uso de CPU e acionar a política de escalabilidade (Abaixo de limite)   
   CPUAlarmLow:
     Type: AWS::CloudWatch::Alarm
     Properties:

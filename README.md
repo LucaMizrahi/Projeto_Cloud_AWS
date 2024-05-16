@@ -59,12 +59,20 @@ Agora que a aplicação está rodando, será utilizado o link gerado no comando 
     ```
     **AVISO**: Substitua `<LoadBalancerDNS>` pelo link gerado no comando de obtenção do link do DNS.
 
+    **OU** 
+
+    Pelo navegador acesse o link `http://<LoadBalancerDNS>` para acessar a aplicação.
+
 2. Acesse a rota `/users` da aplicação utilizando *curl*
 
     ```bash
     curl http://<LoadBalancerDNS>/users # Lista todos os usuários
     ```
     **AVISO**: Substitua `<LoadBalancerDNS>` pelo link gerado no comando de obtenção do link do DNS.
+
+    **OU**
+
+    Pelo navegador acesse o link `http://<LoadBalancerDNS>/users` para listar todos os usuários.
   
 3. Crie um usuário no banco de dados
 
@@ -151,7 +159,7 @@ pip install locust
 1. Execute o comando `locust` para iniciar o teste de carga.
 
     ```bash
-    locustfile.py --host=http://<LoadBalancerDNS> --headless -u 100 -r 10 -t 15m
+    locust -f locustfile.py --host=http://<LoadBalancerDNS> --headless -u 100 -r 10 -t 15m
     ```
     - `-u` ou `--users`: Número de usuários
     - `-r` ou `--spawn-rate`: Taxa de usuários por segundo
@@ -161,4 +169,12 @@ pip install locust
 
 2. Observe o comportamento do Auto Scaling Group e do CloudWatch, para confirmar que o Auto Scaling está funcionando corretamente.
 
+Ao final do teste de carga, é possível visualizar os resultados no terminal e é possível perceber que para os parâmetros definidos, o Auto Scaling Group ajustou o número de instâncias EC2 conforme necessário, garantindo alta disponibilidade e eficiência na utilização de recursos, sem que houvesse falhas ou interrupções na aplicação. 
 
+![Instâncias criadas pelo Auto Scaling Group](imgs/Instancias_TesteLocust.png)
+
+Lembrando que o máximo de instâncias que podem ser criadas foi definido em 5, logo o Auto Scaling Group conseguiu escalar o número de instâncias conforme necessário, sem ultrapassar o limite definido.
+
+![Resultado do Teste de Carga](imgs/Resultado_TesteLocust.png)
+
+O Resultado do Teste de Carga mostra que a aplicação foi capaz de lidar com a carga de 100 usuários por segundo, sem que houvesse falhas ou interrupções, garantindo alta disponibilidade e eficiência na utilização de recursos.
