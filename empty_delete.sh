@@ -44,6 +44,19 @@ delete_stack() {
   fi
 }
 
+# Função para deletar o secret do AWS Secret Manager
+delete_secret() {
+  echo "Tentando deletar o AWS Secret Manager: $SECRET_NAME..."
+  aws secretsmanager delete-secret --secret-id $SECRET_NAME --force-delete-without-recovery
+
+  if [ $? -eq 0 ]; then
+    echo "Secret $SECRET_NAME deletado com sucesso."
+  else
+    echo "Erro ao deletar o secret $SECRET_NAME. Verifique as mensagens de erro do AWS Secret Manager para mais detalhes."
+    exit 1
+  fi
+}
+
 # Chamar funções
 empty_bucket
 delete_bucket
