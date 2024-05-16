@@ -2,6 +2,30 @@
 
 ### Luca Mizrahi
 
+## Introdução ao Projeto
+
+### Descrição do Projeto
+
+O projeto AWS CloudFormation tem como objetivo criar uma arquitetura escalável e robusta na AWS para hospedar uma aplicação web. Utilizando o AWS CloudFormation, facilitamos a gestão de recursos e a automação de infraestrutura, permitindo implantações consistentes e repetíveis. A aplicação é distribuída automaticamente entre múltiplas instâncias EC2 através de um Application Load Balancer (ALB), garantindo alta disponibilidade e balanceamento de carga eficiente.
+
+### Topologia da Aplicação
+
+A aplicação é composta por uma instância EC2 que executa um servidor web Flask, conectado a um banco de dados MySQL. O Application Load Balancer (ALB) distribui o tráfego entre as instâncias EC2, garantindo alta disponibilidade e escalabilidade. O Auto Scaling Group monitora a utilização dos recursos e ajusta automaticamente o número de instâncias EC2 conforme necessário. O CloudWatch monitora o desempenho da aplicação e envia alertas caso o uso recursos ultrapasse os limites definidos ou seja menor que o esperado, o que faz com que o Auto Scaling Group ajuste o número de instâncias EC2, para garantir uma maior eficiência e economia de custos.
+
+![Topologia da Aplicação](imgs/diagrama-projeto-cloud.drawio.png)
+
+### Diagrama da Arquitetura AWS
+
+O diagrama da arquitetura AWS mostra a relação entre os diferentes serviços utilizados na aplicação, incluindo EC2, ALB, Auto Scaling Group e CloudWatch.
+
+![Diagrama da Arquitetura AWS](imgs/application-composer-application-stack.yaml.png)
+
+### Calculo dos Custos do Projeto
+Para estimar os custos associados à arquitetura proposta, utilizamos a AWS Cost Calculator. Esta ferramenta permite modelar e comparar os custos de diferentes configurações de serviços AWS, ajudando a tomar decisões informadas sobre escalabilidade e custo-benefício.
+
+
+
+
 ## Comandos para utilização da aplicação
 
 ### Criação da Stack 
@@ -95,10 +119,6 @@ Para atualizar a stack, é necessário alterar o arquivo `template.yaml` e execu
     ./update_stack.sh
     ```
     **AVISO**: O script irá deletar a stack e não será mais possível utilizar a aplicação.
-
-### Calculo dos Custos do Projeto
-
-Os custos foram calculados utilizando 
 
 ### Teste do Elastic Auto Scaling com o Locust
 
