@@ -16,7 +16,7 @@ A aplicação é composta por uma instância EC2 que executa um servidor web Fla
 
 ### Diagrama da Arquitetura AWS
 
-O diagrama da arquitetura AWS mostra a relação entre os diferentes serviços utilizados na aplicação, incluindo EC2, ALB, Auto Scaling Group e CloudWatch.
+O diagrama da arquitetura AWS mostra a relação entre os diferentes serviços utilizados na aplicação, incluindo EC2, ALB, Auto Scaling Group, Dynamo DB e CloudWatch.
 
 ![Diagrama da Arquitetura AWS](imgs/application-composer-application-stack.yaml.png)
 
