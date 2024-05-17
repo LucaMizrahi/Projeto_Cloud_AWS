@@ -25,6 +25,14 @@ Para estimar os custos associados à arquitetura proposta, utilizamos a AWS Cost
 
 [Estimativa de Custos AWS](https://github.com/LucaMizrahi/Projeto_Cloud_AWS/blob/main/custos_AWS/My%20Estimate%20-%20Calculadora%20de%20Pre%C3%A7os%20da%20AWS.pdf)
 
+Dentre os custos principais estão principalmente 2, sendo eles DynamoDB e Elastic Load Balancer, que são os serviços mais caros da aplicação. Abaixo estão os custos estimados para a aplicação proposta:
+
+1. DynamoDB: $26,39 por/mês (1 tabela com 1GB de armazenamento)
+
+2. Elastic Load Balancer: $16,44 por/mês (1 Application Load Balancer)
+
+>Como possíveis melhorias para redução de custos, podemos citar a utilização de instâncias reservadas ou instâncias spot, que são mais baratas que instâncias sob demanda, e também a utilização de um banco de dados RDS, que é mais barato que o DynamoDB.
+
 ## Comandos para utilização da aplicação
 
 ### Configuração do Ambiente	
