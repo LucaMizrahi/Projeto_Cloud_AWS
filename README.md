@@ -169,7 +169,7 @@ Instale o `locust` pelo pip:
 pip install locust
 ```
 
-#### Utilização do Locust pela interface WEB
+### Utilização do Locust pela interface WEB
 
 1. Execute o comando `locust` para iniciar o servidor web do locust.
 
@@ -186,7 +186,7 @@ pip install locust
 
 4. Inicie o teste de carga e observe o comportamento do Auto Scaling Group e do CloudWatch, para confirmar que o Auto Scaling está funcionando corretamente.
 
-#### Utilização do Locust pela linha de comando
+### Utilização do Locust pela linha de comando
 
 1. Execute o comando `locust` para iniciar o teste de carga.
 
@@ -210,3 +210,19 @@ Lembrando que o máximo de instâncias que podem ser criadas foi definido em 5, 
 ![Resultado do Teste de Carga](imgs/Resultado_TesteLocust.png)
 
 O Resultado do Teste de Carga mostra que a aplicação foi capaz de lidar com a carga de 100 usuários por segundo, sem que houvesse falhas ou interrupções, garantindo alta disponibilidade e eficiência na utilização de recursos.
+
+### Análise de Custos Real por meio da aba Billing AWS
+
+Como não conseguimos acessar a aba de `Tags de Alocação de Custos` para visualizar os custos reais da aplicação, podemos acessar a aba de `Billing` da AWS para visualizar os custos reais da aplicação. 
+
+Para acessar a aba de `Billing` da AWS, siga os passos abaixo:
+
+1. Acesse o Console da AWS.
+
+2. Pesquisar por `Billing and Cost Managment` na barra de pesquisa. 
+
+![Custos Reais da Aplicação](imgs/Custos_Reais.png)
+
+Considerando que o uso de recursos se manterá como foi realizado no período de MTD (Month-to-date) atual, o custo mensal da aplicação seria de algo em torno de **$50,66 dólares/mês** (projeção da própria AWS com base no uso passado dos recursos). 
+
+No entanto é muito importante ressaltar que uma parte dessa projeção é imprecisa porque houve gastos que envolvem o aprendizado dos recursos da AWS, mas a realidade é que esses gastos não seriam recorrentes, logo o custo real da aplicação seria menor do que o projetado pela AWS.
