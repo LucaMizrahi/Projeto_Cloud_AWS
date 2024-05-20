@@ -209,7 +209,7 @@ Lembrando que o máximo de instâncias que podem ser criadas foi definido em 5, 
 
 ![Resultado do Teste de Carga](imgs/Resultado_TesteLocust.png)
 
-O Resultado do Teste de Carga mostra que a aplicação foi capaz de lidar com a carga de 100 usuários por segundo, sem que houvesse falhas ou interrupções, garantindo alta disponibilidade e eficiência na utilização de recursos.
+O Resultado do Teste de Carga mostra que a aplicação foi capaz de lidar com a carga de 100 usuários fazendo em média 30 requisições por segundo, sem que houvesse falhas ou interrupções, garantindo alta disponibilidade e eficiência na utilização de recursos.
 
 ### Análise de Custos Real por meio da aba Billing AWS
 

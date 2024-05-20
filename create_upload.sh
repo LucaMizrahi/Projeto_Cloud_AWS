@@ -2,7 +2,7 @@
 
 # Variáveis
 BUCKET_NAME="bucket-projeto-lucam"
-STACK_NAME="application-stack"
+STACK_NAME="StackProjetoLucam"
 APP_FILE="app.py"
 REGION="us-east-1"
 TEMPLATE_FILE="application-deployment.yaml"
