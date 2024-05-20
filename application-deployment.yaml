@@ -271,7 +271,7 @@ Resources:
   CPUAlarmHigh:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmDescription: "Alarm para CPU > 70%"
+      AlarmDescription: "Alarm para CPU > 1%"
       Namespace: "AWS/EC2"
       MetricName: "CPUUtilization"
       Dimensions:
@@ -289,7 +289,7 @@ Resources:
   CPUAlarmLow:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmDescription: "Alarm para CPU < 30%"
+      AlarmDescription: "Alarm para CPU < 0.5%"
       Namespace: "AWS/EC2"
       MetricName: "CPUUtilization"
       Dimensions:
