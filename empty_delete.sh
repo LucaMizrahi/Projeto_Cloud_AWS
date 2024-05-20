@@ -2,7 +2,7 @@
 
 # Variáveis
 BUCKET_NAME="bucket-projeto-lucam"
-STACK_NAME="application-stack"
+STACK_NAME="StackProjetoLucam"
 REGION="us-east-1"
 
 # Função para esvaziar o bucket S3

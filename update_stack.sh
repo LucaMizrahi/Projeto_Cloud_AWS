@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Variáveis
-STACK_NAME="application-stack"
+STACK_NAME="StackProjetoLucam"
 TEMPLATE_FILE="application-deployment.yaml"
 APP_FILE="app.py"
 AMI="ami-07caf09b362be10b8"
