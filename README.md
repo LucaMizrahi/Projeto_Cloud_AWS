@@ -247,6 +247,6 @@ Para acessar a aba de `Billing` da AWS, siga os passos abaixo:
 
 *Imagem Obtida na Data: 20/05/2024*
 
-Considerando que o uso de recursos se manterá como foi realizado no período de MTD (Month-to-date) atual, o custo mensal da aplicação seria de algo em torno de **$25,33 dólares/mês** (projeção da própria AWS com base no uso passado dos recursos considerando as duas contas - Minha e do Gustavo). Assim, é possível perceber que a projeção real de custos utilizando o billing é consideravelmente menor que utilizando a calculador de custos da AWS, que chegou em um valor de **$55,93 dólares/mês**.
+Considerando que o uso de recursos se manterá como foi realizado no período de MTD (Month-to-date) atual, o custo mensal da aplicação seria de algo em torno de **$35,66 dólares/mês** (projeção da própria AWS com base no uso passado dos recursos considerando as duas contas - Minha e do Gustavo). Assim, é possível perceber que a projeção real de custos utilizando o billing é consideravelmente menor que utilizando a calculador de custos da AWS, que chegou em um valor de **$55,93 dólares/mês**.
 
 No entanto é muito importante ressaltar que uma parte dessa projeção é imprecisa porque houve gastos que envolvem o aprendizado dos recursos da AWS, mas a realidade é que esses gastos não seriam recorrentes, logo o custo real da aplicação seria provavelmente menor do que o projetado pela AWS na aba de billing.
