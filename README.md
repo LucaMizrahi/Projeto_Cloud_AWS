@@ -61,13 +61,13 @@ Configuração do ambiente para execução dos comandos:
 
 ### Clone do Repositório
 
-Clone o repositório para obter os arquivos necessários para execução dos comandos.
+1. Clone o repositório para obter os arquivos necessários para execução dos comandos.
 
     ```bash
-    git clone https://github.com/LucaMizrahi/Projeto_Cloud_AWS.git
+    aws configure
     ```
 
-Se precisar faça a instalção do `git`:
+2. Se precisar faça a instalção do `git`:
 
     ```bash
     sudo apt install git
@@ -75,7 +75,7 @@ Se precisar faça a instalção do `git`:
     
 ### Criação da Stack
 
-Entre na pasta do projeto para executar os comandos.
+- Entre na pasta do projeto para executar os comandos.
 
     ```bash
     cd <path>
