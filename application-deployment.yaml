@@ -271,7 +271,7 @@ Resources:
   CPUAlarmHigh:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmDescription: "Alarm para CPU > 1%"
+      AlarmDescription: "Alarm para CPU > 3%"
       Namespace: "AWS/EC2"
       MetricName: "CPUUtilization"
       Dimensions:
@@ -280,7 +280,7 @@ Resources:
       Statistic: "Average"
       Period: 30
       EvaluationPeriods: 2
-      Threshold: 1 
+      Threshold: 3 
       ComparisonOperator: "GreaterThanThreshold"
       AlarmActions:
         - !Ref ScaleUpPolicy
@@ -296,7 +296,7 @@ Resources:
         - Name: "AutoScalingGroupName"
           Value: !Ref AutoScalingGroup
       Statistic: "Average"
-      Period: 300
+      Period: 60
       EvaluationPeriods: 2
       Threshold: 0.5
       ComparisonOperator: "LessThanThreshold"
