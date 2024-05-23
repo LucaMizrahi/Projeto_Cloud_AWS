@@ -35,7 +35,31 @@ Dentre os custos principais estão principalmente 2, sendo eles DynamoDB e Elast
 
 ## Comandos para utilização da aplicação
 
-### Configuração do Ambiente	
+### Configuração do Ambiente
+
+Primeiramente é necessário criar o usuário IAM no Console AWS:
+
+- Acesse o (Console AWS)[https://aws.amazon.com/pt/console/]
+
+- Navegue para o serviço `IAM` e clique em `Usuários`.
+
+- Clique em `Adicionar usuário` e insira um nome para o usuário.
+
+- Selecione a opção `Acesso programático` e clique em `Próximo`.
+
+- Selecione a opção `Anexar políticas existentes diretamente` e selecione as seguintes políticas:
+  - `AdministratorAccess`
+  - `AmazonDynamoDBFullAccess`
+  - `AmazonDynamoDBFullAcesswithDataPipeline`
+  - `AmazonEC2FullAccess`
+  - `AWSBillingConductorFullAccess`
+  - `AWSCloudFormationFullAccess`
+  - `Billing`
+  - `ElasicLoadBalancingFullAccess`
+  - `IAMFullAccess`
+  - `IAMUserChangePassword`
+
+Após a criação do usuário, será gerado um `Access Key ID` e um `Secret Access Key`. Guarde essas informações, pois serão utilizadas para configurar o AWS CLI.
 
 Configuração do ambiente para execução dos comandos:
 
