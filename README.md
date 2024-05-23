@@ -219,7 +219,7 @@ Dentre os custos principais estão principalmente 2, sendo eles DynamoDB e Elast
 
 Primeiramente é necessário criar o usuário IAM no Console AWS:
 
-- Acesse o (Console AWS)[https://aws.amazon.com/pt/console/]
+- Acesse o [Console AWS](https://aws.amazon.com/pt/console/)
 
 - Navegue para o serviço `IAM` e clique em `Usuários`.
 
