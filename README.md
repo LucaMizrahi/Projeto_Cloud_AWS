@@ -250,3 +250,181 @@ Para acessar a aba de `Billing` da AWS, siga os passos abaixo:
 Considerando que o uso de recursos se manterá como foi realizado no período de MTD (Month-to-date) atual, o custo mensal da aplicação seria de algo em torno de **$35,66 dólares/mês** (projeção da própria AWS com base no uso passado dos recursos considerando as duas contas - Minha e do Gustavo). Assim, é possível perceber que a projeção real de custos utilizando o billing é consideravelmente menor que utilizando a calculador de custos da AWS, que chegou em um valor de **$55,93 dólares/mês**.
 
 No entanto é muito importante ressaltar que uma parte dessa projeção é imprecisa porque houve gastos que envolvem o aprendizado dos recursos da AWS, mas a realidade é que esses gastos não seriam recorrentes, logo o custo real da aplicação seria provavelmente menor do que o projetado pela AWS na aba de billing.
+
+## Componentes da Aplicação 
+
+Este documento descreve os componentes utilizados na criação de uma infraestrutura AWS com VPC, ALB, EC2 com Auto Scaling, S3 e DynamoDB para uma aplicação Python, conforme o template CloudFormation fornecido.
+
+## Parâmetros
+
+### `AppS3File`
+- **Descrição:** Nome do arquivo Python da aplicação dentro do Bucket S3
+- **Tipo:** String
+- **Default:** `app.py`
+
+### `InstanceType`
+- **Descrição:** Tipo de instância EC2 para o Auto Scaling Group
+- **Tipo:** String
+- **Default:** `t2.micro`
+
+### `AMI`
+- **Descrição:** AMI a ser usada para as instâncias EC2
+- **Tipo:** String
+- **Default:** `ami-07caf09b362be10b8`
+
+### `BucketName`
+- **Descrição:** Nome do bucket S3 que contém a aplicação Python
+- **Tipo:** String
+- **Default:** `bucket-projeto-lucam`
+
+## Recursos
+
+### IAM Role e Instance Profile
+
+#### `S3DynamoDBAccessRole`
+- **Descrição:** Role IAM para acesso ao S3 e DynamoDB.
+- **Policies:**
+  - Acesso a objetos no bucket S3.
+  - Permissões para operações básicas no DynamoDB (Scan, PutItem, DeleteItem, GetItem, UpdateItem).
+
+#### `S3DynamoDBInstanceProfile`
+- **Descrição:** Instance Profile para associar a role `S3DynamoDBAccessRole` às instâncias EC2.
+
+### VPC e Subnets
+
+#### `MinhaVPC`
+- **Descrição:** Criação de uma VPC.
+- **CidrBlock:** `10.0.0.0/16`
+- **Tags:** `Name: MinhaVPC`
+
+#### `InternetGateway` e `GatewayAttachment`
+- **Descrição:** Criação e associação de um Internet Gateway à VPC.
+
+#### `PublicSubnet1` e `PublicSubnet2`
+- **Descrição:** Subnets públicas na VPC.
+- **CidrBlock:**
+  - `PublicSubnet1`: `10.0.1.0/24`
+  - `PublicSubnet2`: `10.0.2.0/24`
+- **MapPublicIpOnLaunch:** true
+
+### Tabela de Rotas e Associações
+
+#### `PublicRouteTable`
+- **Descrição:** Tabela de rotas para a VPC.
+
+#### `PublicRoute`
+- **Descrição:** Rota para a internet via Internet Gateway.
+
+#### `PublicSubnetRouteTableAssociation1` e `PublicSubnetRouteTableAssociation2`
+- **Descrição:** Associações das subnets públicas à tabela de rotas públicas.
+
+### Security Groups
+
+#### `WebServerSecurityGroup`
+- **Descrição:** Security Group para instâncias EC2.
+- **Regras de Ingresso:** Tráfego HTTP (porta 80) e SSH (porta 22) permitido de qualquer IP (`0.0.0.0/0`).
+
+#### `ALBSecurityGroup`
+- **Descrição:** Security Group para o Application Load Balancer (ALB).
+- **Regras de Ingresso:** Tráfego HTTP (porta 80) permitido de qualquer IP (`0.0.0.0/0`).
+
+### Application Load Balancer (ALB)
+
+#### `MyALB`
+- **Descrição:** ALB para distribuir o tráfego entre instâncias EC2.
+- **Subnets:** `PublicSubnet1`, `PublicSubnet2`
+- **SecurityGroups:** `ALBSecurityGroup`
+
+#### `Listener`
+- **Descrição:** Listener do ALB para tráfego HTTP na porta 80.
+- **DefaultActions:** Forward para o Target Group `MyTargetGroup`.
+
+#### `MyTargetGroup`
+- **Descrição:** Target Group para o ALB.
+- **Propriedades:** 
+  - Porta: 80
+  - Protocolo: HTTP
+  - HealthCheckPath: `/`
+  - HealthCheckIntervalSeconds: 30
+  - HealthCheckTimeoutSeconds: 5
+  - HealthyThresholdCount: 3
+  - UnhealthyThresholdCount: 2
+
+### Auto Scaling
+
+#### `LaunchConfig`
+- **Descrição:** Configuração de lançamento para instâncias EC2 do Auto Scaling Group.
+- **Properties:**
+  - `ImageId`: `AMI`
+  - `InstanceType`: `InstanceType`
+  - `SecurityGroups`: `WebServerSecurityGroup`
+  - `IamInstanceProfile`: `S3DynamoDBInstanceProfile`
+  - **UserData:** Script de inicialização para instalar dependências e executar a aplicação.
+
+#### `AutoScalingGroup`
+- **Descrição:** Auto Scaling Group para escalabilidade da aplicação.
+- **Propriedades:**
+  - `LaunchConfigurationName`: `LaunchConfig`
+  - `MinSize`: 1
+  - `MaxSize`: 5
+  - `DesiredCapacity`: 3
+  - `TargetGroupARNs`: `MyTargetGroup`
+  - `VPCZoneIdentifier`: `PublicSubnet1`, `PublicSubnet2`
+
+### Políticas de Escalabilidade
+
+#### `ScaleUpPolicy`
+- **Descrição:** Política de escalabilidade para aumentar a capacidade.
+- **Propriedades:**
+  - `ScalingAdjustment`: 1
+  - `AdjustmentType`: ChangeInCapacity
+  - `Cooldown`: 120
+
+#### `ScaleDownPolicy`
+- **Descrição:** Política de escalabilidade para reduzir a capacidade.
+- **Propriedades:**
+  - `ScalingAdjustment`: -1
+  - `AdjustmentType`: ChangeInCapacity
+  - `Cooldown`: 120
+
+### Alarmes do CloudWatch
+
+#### `CPUAlarmHigh`
+- **Descrição:** Alarme para monitorar uso de CPU (Acima de limite).
+- **Propriedades:**
+  - `MetricName`: CPUUtilization
+  - `Threshold`: 3
+  - `AlarmActions`: `ScaleUpPolicy`
+
+#### `CPUAlarmLow`
+- **Descrição:** Alarme para monitorar uso de CPU (Abaixo de limite).
+- **Propriedades:**
+  - `MetricName`: CPUUtilization
+  - `Threshold`: 0.5
+  - `AlarmActions`: `ScaleDownPolicy`
+
+### DynamoDB
+
+#### `DynamoDBTable`
+- **Descrição:** Tabela DynamoDB para armazenar usuários.
+- **Propriedades:**
+  - `TableName`: Users_luca
+  - `AttributeDefinitions`: `UserID`
+  - `KeySchema`: `UserID`
+  - `ProvisionedThroughput`: ReadCapacityUnits: 5, WriteCapacityUnits: 5
+
+#### `DynamoDBVpcEndpoint`
+- **Descrição:** Endpoint VPC para acesso privado ao DynamoDB.
+- **Propriedades:**
+  - `VpcId`: `MinhaVPC`
+  - `ServiceName`: `com.amazonaws.${AWS::Region}.dynamodb`
+  - `SubnetIds`: `PublicSubnet1`, `PublicSubnet2`
+  - `SecurityGroupIds`: `WebServerSecurityGroup`
+
+## Outputs
+
+### `LoadBalancerDNSName`
+- **Descrição:** DNS do Load Balancer para acesso à aplicação.
+- **Valor:** DNS do `MyALB`
+
+Caso deseje saber mais sobre os componentes que foram utilizados para a criação da stack AWS, acesse o arquivo `application-deployment.yaml` que contém a descrição dos detalhada recursos utilizados na aplicação.
