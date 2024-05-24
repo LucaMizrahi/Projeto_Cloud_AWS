@@ -296,7 +296,7 @@ Configuração do ambiente para execução dos comandos:
 Comandos para criação da stack: 
 
 ```bash
-chmod +x create_and_upload.sh
+chmod +x create_upload.sh
 ./create_upload.sh
 ```
 Com esses 2 comandos é possível deixar o script executável, e executar o script que faz upload da aplicação para o bucket da AWS e cria a stack. 
