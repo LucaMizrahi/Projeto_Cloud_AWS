@@ -239,7 +239,13 @@ Primeiramente é necessário criar o usuário IAM no Console AWS:
   - `IAMFullAccess`
   - `IAMUserChangePassword`
 
-Após a criação do usuário, será gerado um `Access Key ID` e um `Secret Access Key`. Guarde essas informações, pois serão utilizadas para configurar o AWS CLI.
+Após a criação do usuário, será possível gerar gerado um `Access Key ID` e um `Secret Access Key`. 
+
+Para fazer isso é necessário clicar no usuário criado, ir na aba `Credenciais de segurança` e clicar em `Criar chave de acesso`.
+
+Após a criação da chave de acesso, será possível visualizar o `Access Key ID` e o `Secret Access Key`. 
+
+***AVISO** 
 
 Configuração do ambiente para execução dos comandos:
 
@@ -291,7 +297,7 @@ Comandos para criação da stack:
 
 ```bash
 chmod +x create_and_upload.sh
-./create_and_upload.sh
+./create_upload.sh
 ```
 Com esses 2 comandos é possível deixar o script executável, e executar o script que faz upload da aplicação para o bucket da AWS e cria a stack. 
 
@@ -380,8 +386,8 @@ Para atualizar a stack, é necessário alterar o arquivo `template.yaml` e execu
 1. Execute o script `delete_stack.sh` para deletar a esvaziar o bucket, deletar o bucket e também deletar a stack.
 
     ```bash
-    chmod +x update_stack.sh
-    ./update_stack.sh
+    chmod +x empty_delete.sh
+    ./empty_delete.sh
     ```
     **AVISO**: O script irá deletar a stack e não será mais possível utilizar a aplicação.
 
