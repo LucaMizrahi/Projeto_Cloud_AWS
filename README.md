@@ -1,6 +1,7 @@
 # Projeto AWS CloudFormation
 
 ### Luca Mizrahi
+#### Conceito Almejado: *B+*
 
 ## Introdução ao Projeto
 
