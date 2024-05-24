@@ -306,7 +306,7 @@ Após alguns minutos a stack estará criada e será possível acessar a aplicaç
 Comando para obter o link da aplicação (DNS do Load Balancer): 
 
 ```bash
-aws cloudformation describe-stacks --stack-name application-stack \
+aws cloudformation describe-stacks --stack-name StackProjetoLucam \
   --query 'Stacks[0].Outputs[?OutputKey==`LoadBalancerDNSName`].OutputValue' \
   --output text
 ```
